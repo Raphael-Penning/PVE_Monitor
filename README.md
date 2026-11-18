@@ -4,14 +4,24 @@ Icinga check command for Proxmox VE via API
 ![Linter](https://github.com/Raphael-Penning/PVE_Monitor/actions/workflows/lint.yml/badge.svg)
 ![Tests](https://github.com/Raphael-Penning/PVE_Monitor/actions/workflows/test.yml/badge.svg)
 
+[![Python 3.9 CI support](https://img.shields.io/badge/Python-3.9-blue?logo=python)](https://github.com/nbuchwitz/check_pve/actions/workflows/test.yml)
+[![Python 3.10 CI support](https://img.shields.io/badge/Python-3.10-blue?logo=python)](https://github.com/nbuchwitz/check_pve/actions/workflows/test.yml)
+[![Python 3.11 CI support](https://img.shields.io/badge/Python-3.11-blue?logo=python)](https://github.com/nbuchwitz/check_pve/actions/workflows/test.yml)
+[![Python 3.12 CI support](https://img.shields.io/badge/Python-3.12-blue?logo=python)](https://github.com/nbuchwitz/check_pve/actions/workflows/test.yml)
+[![Python 3.13 CI support](https://img.shields.io/badge/Python-3.13-blue?logo=python)](https://github.com/nbuchwitz/check_pve/actions/workflows/test.yml)
+[![Python 3.14 CI support](https://img.shields.io/badge/Python-3.14-blue?logo=python)](https://github.com/nbuchwitz/check_pve/actions/workflows/test.yml)
+[![Python 3.15 CI support](https://img.shields.io/badge/Python-3.15-blue?logo=python)](https://github.com/nbuchwitz/check_pve/actions/workflows/test.yml)
+
 ## Setup
 
 ### Requirements
 
-This check command depends on **Python 3** and the following modules:
+This check command supports **Python 3.9 through 3.15** and depends on the following modules:
  * requests
  * argparse
  * packaging
+
+The test suite runs against each supported Python minor version in CI.
 
 **Installation on Debian / Ubuntu**
 ```
@@ -103,7 +113,23 @@ For more information about the Proxmox VE privilege system, see the [documentati
 
 ## Usage
 
+### Icinga 2
+
 The `icinga2` folder contains the command definition and service examples for use with Icinga2.
+
+For Icinga Director users, it contains a basket with service templates, service sets and the command itself. Before importing it, you first have to change the base service template, because your setup probably uses a different base service template than the one in the basket (`Base Service`).
+
+```
+# Update the base service template
+sed -i 's/Base Service/<YOUR_BASE_SERVICE_TEMPLATE>/' pve.json
+
+# Import the basket
+icingacli director basket restore --verbose < pve.json
+```
+
+The service sets are split into two parts - one for cluster wide checks (e.g., `pve-cluster` or `pve-ceph-health`) and one for per-host checks. This makes it easier to schedule downtimes during maintenances on one host. Therefore, add the `Proxmox` service set to all of your hosts and add the `Proxmox-Clusterwide` service set to only one of them.
+
+### CLI Usage
 
 ```
 usage: check_pve.py [-h] [--version] [-e API_ENDPOINT] [--api-port API_PORT] [-u API_USER] [-p API_PASSWORD |
@@ -275,6 +301,7 @@ OK - No failed replication jobs on node1
 ```
 ./check_pve.py -u <API_USER> -p <API_PASSWORD> -e <API_ENDPOINT> -m ceph-health
 WARNING - Ceph Cluster is in warning state
+- nobackfill,norebalance,norecover flag(s) set
 ```
 
 **Check ZFS pool health**
